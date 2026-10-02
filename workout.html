@@ -106,6 +106,12 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 dialog img{width:min(80vw,360px);height:auto;display:block;border-radius:8px}
 dialog p{margin:8px 0 0;font-weight:600}
 
+.rest-btn{border:1px solid var(--line);background:var(--floor);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;margin-left:6px}
+.timer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--floor);border-radius:999px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;font-weight:600;z-index:8;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.timer b{font-family:var(--num);font-size:20px;min-width:64px}
+.timer.ready{background:var(--green);color:#fff}
+.timer.over{background:var(--yellow);color:#15202B}
+.timer button{border:0;border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.18);color:inherit;font-weight:700;cursor:pointer}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--floor);padding:10px 16px;border-radius:10px;font-size:15px;max-width:90vw;z-index:9;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 footer{margin-top:28px;font-size:12px;color:var(--muted)}
@@ -128,6 +134,7 @@ footer a{color:inherit}
     <button class="plate" data-view="B" style="--c:var(--blue)" aria-label="Тренировка B"><span>B</span></button>
     <button class="plate y" data-view="C" style="--c:var(--yellow)" aria-label="Тренировка C"><span>C</span></button>
     <button class="plate small" data-view="body" style="--c:var(--green)" aria-label="Данные с весов"><span>Весы</span></button>
+    <button class="plate small" data-view="meas" style="--c:#5D6873" aria-label="Замеры лентой"><span>Замеры</span></button>
   </div>
 
   <section id="view-workout"></section>
@@ -166,6 +173,23 @@ footer a{color:inherit}
     </form>
   </section>
 
+  <section id="view-meas" hidden>
+    <h2>Замеры лентой</h2>
+    <div class="phase" id="meas-due" style="border-left-color:#5D6873"></div>
+    <p class="hint">Утром натощак, на выдохе, лента прилегает, но не сдавливает. Талия — раз в неделю, остальное — раз в 2 недели. Пустые поля можно не заполнять.</p>
+    <form class="form" id="meas-form" autocomplete="off">
+      <label class="wide">Дата<input type="date" name="date" required></label>
+      <label>Талия, по пупку<input type="number" step="0.5" inputmode="decimal" name="waist_cm"></label>
+      <label>Шея, под кадыком<input type="number" step="0.5" inputmode="decimal" name="neck_cm"></label>
+      <label>Грудь, по соскам<input type="number" step="0.5" inputmode="decimal" name="chest_cm"></label>
+      <label>Плечо, в напряжении<input type="number" step="0.5" inputmode="decimal" name="arm_cm"></label>
+      <label>Бедро, самое широкое<input type="number" step="0.5" inputmode="decimal" name="thigh_cm"></label>
+      <label>Ягодицы<input type="number" step="0.5" inputmode="decimal" name="hips_cm"></label>
+      <label class="wide">Заметка<textarea name="note" rows="2"></textarea></label>
+    </form>
+    <p class="hint" id="navy-out"></p>
+  </section>
+
   <section id="view-progress" hidden>
     <h2>Прогресс</h2>
     <p class="hint" id="prog-status">Нажми «Обновить», чтобы загрузить данные из таблицы.</p>
@@ -173,7 +197,10 @@ footer a{color:inherit}
       <select id="body-metric" aria-label="Показатель">
         <option value="weight_kg">Вес, кг</option><option value="fat_pct">Жир, %</option>
         <option value="muscle_kg">Мышцы, кг</option><option value="skeletal_kg">Скелетные мышцы, кг</option>
-        <option value="water_pct">Вода, %</option><option value="visceral">Висцеральный жир</option>
+        <option value="water_pct">Вода, %</option>
+        <option value="m:waist_cm">Талия, см</option><option value="m:navy_bf_pct">Жир по формуле ВМС, %</option>
+        <option value="m:neck_cm">Шея, см</option><option value="m:chest_cm">Грудь, см</option><option value="m:arm_cm">Плечо, см</option>
+        <option value="m:thigh_cm">Бедро, см</option><option value="m:hips_cm">Ягодицы, см</option><option value="visceral">Висцеральный жир</option>
       </select>
       <div class="chartbox"><canvas id="chart-body"></canvas></div>
       <div class="stat" id="body-stat"></div>
@@ -191,6 +218,7 @@ footer a{color:inherit}
       <label class="wide">Адрес веб-приложения Apps Script<input type="url" name="url" placeholder="https://script.google.com/macros/s/…/exec"></label>
       <label class="wide">Токен (тот же, что в скрипте)<input type="text" name="token"></label>
       <label class="wide">Дата старта программы<input type="date" name="start"></label>
+      <label class="wide">Рост, см (для формулы % жира)<input type="number" inputmode="numeric" name="height"></label>
     </form>
     <p class="hint">Адрес и токен хранятся только в этом браузере, в репозиторий они не попадают.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
@@ -198,6 +226,12 @@ footer a{color:inherit}
       <button class="btn ghost" id="btn-test">Проверить связь</button>
       <button class="btn ghost" id="btn-flush">Отправить очередь</button>
     </div>
+    <h2>Ссылка для экрана «Домой»</h2>
+    <p class="hint">Открой эту ссылку в Safari и добавь страницу на экран «Домой» — ярлык будет сам помнить подключение к таблице, даже если настройки сбросятся.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn ghost" id="btn-link">Скопировать ссылку</button>
+    </div>
+    <p class="hint" id="link-out" style="word-break:break-all"></p>
   </section>
 
   <footer>Анимации упражнений © <a href="https://gymvisual.com/">Gym visual</a>, из датасета <a href="https://github.com/hasaneyldrm/exercises-dataset">exercises-dataset</a>.</footer>
@@ -209,6 +243,7 @@ footer a{color:inherit}
 </div></div>
 
 <dialog id="gifdlg"><img alt=""><p></p><form method="dialog"><button class="btn ghost" style="margin-top:10px;width:100%">Закрыть</button></form></dialog>
+<div class="timer" id="timer" hidden role="timer" aria-live="off"><span id="timer-lbl">Отдых</span><b id="timer-t">0:00</b><button id="timer-stop">Стоп</button></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -217,16 +252,21 @@ const V = id => 'videos/' + id + '.gif';
 const EX = {
   lp_high:{n:'Жим ногами, стопы высоко',g:V('1463-2Qh2J1e'),s:3,lo:15,hi:20,st:5,c:['Колени не глубже 90°','Толкай пятками, колени смотрят по линии носков','Наверху не выпрямляй ноги в замок']},
   legext:{n:'Разгибание ног',g:V('0585-my33uHU'),s:3,lo:15,hi:20,st:2.5,base:25,c:['Ось тренажёра напротив колена','Пауза 1 с вверху, опускай 2–3 с','Работай в амплитуде без боли']},
-  chest:{n:'Жим от груди в Хаммере',g:V('0577-T0yTjgW'),s:3,lo:8,hi:12,st:1.25,base:15,side:true,c:['Сиденье на 6 — рукояти на уровне середины груди','Лопатки прижаты к спинке','Локти под ~45°, не до отказа']},
-  pulldown:{n:'Верхний блок, нейтральный хват',g:V('0818-rkg41Fb'),s:3,lo:10,hi:12,st:2.5,base:45,c:['Сначала опусти плечи, потом тяни локтями','К верху груди, корпус чуть назад','Вверх отпускай медленно']},
+  chest:{n:'Жим от груди в Хаммере',g:V('1299-jHAnWmT'),s:3,lo:8,hi:12,st:1.25,base:15,side:true,c:['Сиденье на 6 — рукояти на уровне середины груди','Лопатки прижаты к спинке','Локти под ~45°, не до отказа']},
+  pulldown:{n:'Верхний блок, прямая рукоять',g:V('2330-LEprlgG'),s:3,lo:10,hi:12,st:2.5,base:45,c:['Хват в 1,5 раза шире плеч, не максимально широкий','Сначала опусти плечи, потом тяни локтями к верху груди','Никогда за голову; вверх отпускай медленно']},
   row:{n:'Горизонтальный блок',g:V('0861-fUBheHs'),s:3,lo:10,hi:12,st:2.5,base:42.5,c:['Корпус вертикален, спина прямая','Тяни к низу живота, своди лопатки','Не откидывайся назад для рывка']},
   lateral:{n:'Махи гантелями в стороны',g:V('0334-DsgkuIt'),s:3,lo:12,hi:15,st:1,base:8,c:['До уровня плеч, не выше','Локти чуть согнуты и ведут движение','Без раскачки корпусом']},
+  pullband:{n:'Подтягивания с резинкой',g:V('0970-r1XNRYB'),s:3,lo:6,hi:10,st:-1,band:true,first:'Подбери резинку, с которой выходит 6–8 чистых повторов. Турник занят — верхний блок, прямая рукоять',c:['Хват чуть шире плеч, начни с опускания плеч','Подбородок над перекладиной, вниз до почти прямых рук','Сделал верх диапазона во всех подходах — бери резинку тоньше']},
+  kneeraise:{n:'Подъём коленей в висе',g:V('0011-03lzqwk'),s:2,lo:10,hi:15,st:0,bw:true,c:['Колени к груди, таз подкручивай вверх','Без раскачки, опускай медленно','Бонус: вис разгружает спину']},
+  crunch:{n:'Скручивания на блоке на коленях',g:V('0175-WW95auq'),s:2,lo:12,hi:15,st:2.5,c:['Под колени — мягкий коврик','Скручивайся рёбрами к тазу, бёдра неподвижны','Тянет не руками, а прессом']},
   plank:{n:'Планка',g:null,s:3,lo:30,hi:45,st:5,time:true,c:['Локти под плечами','Тело прямой линией, пресс и ягодицы напряжены','Таз не проваливается']},
   curl_seat:{n:'Сгибание ног сидя',g:V('0599-Zg3XY7P'),s:3,lo:15,hi:20,st:2.5,c:['Ось напротив колена, валик над пятками','Сгибай до упора, опускай медленно']},
   bridge:{n:'Ягодичный мост',g:V('3013-u0cNiij'),s:3,lo:12,hi:15,st:2.5,c:['Лопатки на скамье, голень вертикальна вверху','Толкайся пятками, сожми ягодицы на 1 с','Не прогибай поясницу']},
   calf:{n:'Подъём на носки',g:V('0605-ykUOVze'),s:3,lo:15,hi:20,st:5,c:['Пауза внизу и вверху','Без пружинящих отскоков']},
   incline:{n:'Жим гантелей, наклон 30°',g:V('0314-ns0SIbU'),s:3,lo:8,hi:12,st:2,base:14,c:['Гантели поднимай с колен, ложась','Локти ~45°, опускай до уровня скамьи','Завершая — гантели на грудь, потом садись']},
-  circle:{n:'Тяга по окружности, упор грудью',g:V('1350-7I6LNUG'),s:3,lo:10,hi:12,st:2.5,base:25,c:['Грудь прижата к опоре всё время','Локти назад-вниз, в конце своди лопатки','Возврат медленный, до растяжения']},
+  circle:{n:'Тяга по окружности сверху',g:V('0581-nZZZy9m'),s:3,lo:10,hi:12,st:2.5,base:25,c:['Грудь прижата к опоре','Тяни локтями вниз-назад по дуге, в конце своди лопатки','Вверх возвращай медленно до растяжения']},
+  dbbench:{n:'Жим гантелей лёжа',g:V('0289-SpYC0Kp'),s:3,lo:8,hi:12,st:2,base:16,hand:true,c:['Гантели поднимай с колен, ложась','Лопатки сведены, локти ~45°','Опускай до уровня груди, не ниже']},
+  dbrow:{n:'Тяга гантели с упором в скамью',g:V('0292-C0MA9bC'),s:3,lo:10,hi:12,st:2,base:18,hand:true,c:['Под колено — сложенное полотенце; если ноет, ногу на пол в широкий шаг','Спина параллельно полу, тяни локтем к бедру','Внизу дай плечу опуститься, но корпус не скручивай']},
   reardelt:{n:'Задняя дельта в тренажёре',g:V('0602-myfUsKf'),s:3,lo:12,hi:15,st:2.5,base:33.75,c:['Грудь прижата к подушке','Разводи руки локтями, лопатки специально не своди','Пауза в конце, возврат медленный']},
   bicurl:{n:'Сгибание рук с гантелями',g:V('0294-NbVPDMW'),s:3,lo:10,hi:12,st:1,c:['Локти прижаты и неподвижны','Опускай за 2–3 с, без раскачки']},
   pushdown:{n:'Разгибание рук на блоке, канат',g:V('0200-dU605di'),s:3,lo:12,hi:15,st:2.5,c:['Локти прижаты к бокам','Внизу разведи концы каната']},
@@ -238,13 +278,24 @@ const EX = {
   shpress:{n:'Жим вверх в тренажёре',g:V('0603-67n3r98'),s:3,lo:10,hi:12,st:2.5,c:['Рукояти на уровне плеч, нейтральный хват','Не выпрямляй локти до упора','Дискомфорт в плече — замени на махи']},
   pecdeck:{n:'Бабочка',g:V('0596-v3xmPAR'),s:3,lo:12,hi:15,st:2.5,c:['Локти слегка согнуты и не меняют угол','Не разводи руки дальше линии плеч']},
   hammer:{n:'Молотковые сгибания',g:V('0313-slDvUAU'),s:2,lo:10,hi:12,st:1,c:['Ладони смотрят друг на друга','Локти неподвижны']},
+  french:{n:'Французский жим с гантелями лёжа',g:V('0351-mpKZGWz'),s:3,lo:10,hi:12,st:1,hand:true,c:['Суперсет с молотками: подход молотков, сразу подход французского, потом отдых','Локти смотрят в потолок и неподвижны, гантели опускай к вискам','Умеренный вес — тяжёлый перегружает локти']},
   hyper:{n:'Гиперэкстензия',g:V('0489-zhMwOwE'),s:3,lo:12,hi:15,st:2.5,c:['Подушка на уровне таза, не живота','Не поднимайся выше прямой линии тела','Первые недели без веса']}
 };
+const BASE_UPPER=['chest','pulldown','pullband','row','dbbench','circle','dbrow','shpress'];
+function restOf(id){const e=EX[id];if(e.time)return [60,60];return BASE_UPPER.includes(id)?[90,120]:[60,90]}
+const mmss=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
+const restTxt=([a,b])=>a===b?mmss(a):(a<120&&b<=120&&b%60?a+'–'+b+' с':mmss(a)+'–'+mmss(b));
 const WO = {
-  A:{color:'var(--red)',list:['lp_high','legext','chest','pulldown','row','lateral','plank']},
-  B:{color:'var(--blue)',list:['curl_seat','bridge','calf','incline','circle','reardelt','bicurl','pushdown']},
-  C:{color:'var(--yellow)',list:['lp_mid','abduct','adduct','curl_lie','assisted','shpress','pecdeck','hammer','hyper']}
+  A:{color:'var(--red)',list:['lp_high','legext','chest','pullband','row','lateral','plank']},
+  B:{color:'var(--blue)',list:['curl_lie:3','bridge','dbbench','circle','reardelt','bicurl','pushdown','kneeraise']},
+  C:{color:'var(--yellow)',list:['lp_mid','abduct','adduct','curl_lie:2','dbrow','shpress','pecdeck','hammer','french','hyper','crunch']}
 };
+const POSTURE = [
+  ['Разведение резинки перед собой, 2 × 15–20',null],
+  ['Y-подъёмы лёжа грудью на наклонной скамье, гантели 1–2 кг, 2 × 12',V('3541-PbzNu7c')],
+  ['Растяжка грудных в дверном проёме или у стойки, 2 × 30 с на сторону',V('1167-3uj0Ozg')],
+  ['Вис на турнике, 2 × 20–30 с',null]
+];
 const WARM = [
   ['Велотренажёр 6–8 мин, лёгкое сопротивление',null],
   ['Наружная ротация плеча на блоке, 2 × 15 на руку',V('0235-FWdVhcW')],
@@ -258,6 +309,8 @@ const LS = {
   set(k,v){try{localStorage.setItem('gym.'+k,JSON.stringify(v))}catch(e){}}
 };
 let cfg = LS.get('cfg',{url:'',token:'',start:''});
+// Настройки из ссылки ?c=… — так ярлык на экране «Домой» сам восстанавливает подключение
+try{const c=new URLSearchParams(location.search).get('c');if(c){const o=JSON.parse(atob(c));cfg={url:o.u||cfg.url,token:o.t||cfg.token,start:cfg.start||o.s||''};LS.set('cfg',cfg)}}catch(e){}
 if(!cfg.start){cfg.start=new Date().toISOString().slice(0,10);LS.set('cfg',cfg)}
 let last = LS.get('last',{});      // exId -> {date, sets:[{w,r}]}
 let queue = LS.get('queue',[]);    // payloads waiting for upload
@@ -283,14 +336,17 @@ function phase(){
 /* ---------- Подсказка по весу ---------- */
 function suggest(id){
   const e=EX[id],l=last[id];
-  if((!l||!l.sets.length)&&e.base){const p=phase().pct,a=Math.abs(e.st),w=Math.round(e.base*p/a)*a;return 'Старт: ~'+fmt(w)+' кг'+(e.side?' на сторону':'')+(p<1?' ('+Math.round(p*100)+'% от рабочего '+fmt(e.base)+')':'')}
+  if((!l||!l.sets.length)&&e.first) return e.first;
+  if((!l||!l.sets.length)&&e.base){const p=phase().pct,a=Math.abs(e.st),w=Math.round(e.base*p/a)*a;return 'Старт: ~'+fmt(w)+' кг'+(e.side?' на сторону':e.hand?' в руке':'')+(p<1?' ('+Math.round(p*100)+'% от рабочего '+fmt(e.base)+')':'')}
   if(!l||!l.sets.length) return e.time?'Первый раз — держи столько, сколько получается ровно':'Первый раз — подбери вес, чтобы оставалось 3 повтора в запасе';
+  if(l&&l.sets.length&&e.bw){const done=l.sets.every(s=>(s.r||0)>=e.hi);return 'Прошлый раз: '+l.sets.map(s=>s.r).join(', ')+(done?'. Добавь 2–3 повтора или делай медленнее':'')}
   const top=e.time?null:Math.max(...l.sets.map(s=>s.w||0));
   const done=l.sets.every(s=>(s.r||0)>=e.hi);
   const prev=e.time?l.sets.map(s=>s.r+' с').join(', '):l.sets.map(s=>fmt(s.w)+'×'+s.r).join(', ');
   if(e.time) return 'Прошлый раз: '+prev+(done?'. Добавь 5 с':'');
   if(done){
     const nw=Math.max(0,top+e.st);
+    if(e.band) return 'Прошлый раз: '+prev+'. '+(top>1?'Пробуй резинку №'+(top-1):'Пробуй без резинки');
     return 'Прошлый раз: '+prev+'. '+(e.assist?'Убавь помощь до '+fmt(nw)+' кг':'Пора прибавить: '+fmt(nw)+' кг'+(e.side?' на сторону':''));
   }
   return 'Прошлый раз: '+prev+'. Тот же вес, добивай до '+e.hi;
@@ -304,24 +360,25 @@ function renderWorkout(key){
   const d=drafts[key]||{};
   let h=`<div class="phase"><b>Неделя ${ph.w}.</b> ${ph.t}</div>
   <details class="warm"><summary>Разминка, 10–12 минут</summary><ol>${WARM.map(x=>`<li>${x[0]}${x[1]?` <a href="#" data-gif="${x[1]}" data-name="${x[0]}">анимация</a>`:''}</li>`).join('')}</ol></details>`;
-  for(const id of w.list){
-    const e=EX[id],n=ph.sets?Math.min(ph.sets,e.s):e.s,ds=d[id]||[],ls=(last[id]||{}).sets||[];
+  for(const it of w.list){
+    const [id,ov]=it.split(':'),e=EX[id],base=ov?+ov:e.s,n=ph.sets?Math.min(ph.sets,base):base,ds=d[id]||[],ls=(last[id]||{}).sets||[];
     const gif=e.g?`<button class="gif" style="background:center/cover url('${e.g}') var(--floor)" data-gif="${e.g}" data-name="${e.n}" aria-label="Анимация: ${e.n}"></button>`:`<div class="gif none">нет анимации</div>`;
     let rows='';
     for(let i=0;i<n;i++){
       const dv=ds[i]||{},lv=ls[i]||ls[ls.length-1]||{};
       rows+=`<span class="n">${i+1}</span>`;
-      if(!e.time) rows+=`<input inputmode="decimal" data-ex="${id}" data-i="${i}" data-f="w" value="${dv.w??''}" placeholder="${lv.w!=null?fmt(lv.w):'кг'}" aria-label="${e.n}, подход ${i+1}, вес">`;
+      if(!(e.time||e.bw)) rows+=`<input inputmode="decimal" data-ex="${id}" data-i="${i}" data-f="w" value="${dv.w??''}" placeholder="${lv.w!=null?fmt(lv.w):(e.band?'№':'кг')}" aria-label="${e.n}, подход ${i+1}, вес">`;
       rows+=`<input inputmode="numeric" data-ex="${id}" data-i="${i}" data-f="r" value="${dv.r??''}" placeholder="${lv.r!=null?lv.r:(e.time?'сек':'повт')}" aria-label="${e.n}, подход ${i+1}, ${e.time?'секунды':'повторы'}">`;
     }
     h+=`<article class="ex"><div class="ex-top">${gif}<div>
       <h3>${e.n}</h3>
-      <div class="target">${n} × ${e.lo}–${e.hi}${e.time?' с':''}</div>
+      <div class="target">${n} × ${e.lo}–${e.hi}${e.time?' с':''}, отдых ${restTxt(restOf(id))}<button class="rest-btn" data-rest="${id}">Отдых ▶</button></div>
       <div class="suggest">${suggest(id)}</div></div></div>
-      <div class="sets${e.time?' one':''}"><span></span>${e.time?'':`<span class="lbl">${e.assist?'помощь, кг':e.side?'кг на сторону':'вес, кг'}</span>`}<span class="lbl">${e.time?'секунды':'повторы'}</span>${rows}</div>
+      <div class="sets${e.time||e.bw?' one':''}"><span></span>${e.time||e.bw?'':`<span class="lbl">${e.assist?'помощь, кг':e.band?'резинка №':e.side?'кг на сторону':e.hand?'кг в руке':'вес, кг'}</span>`}<span class="lbl">${e.time?'секунды':'повторы'}</span>${rows}</div>
       <details class="tech"><summary>Техника</summary><ul>${e.c.map(c=>`<li>${c}</li>`).join('')}</ul></details>
     </article>`;
   }
+  h+=`<details class="warm"><summary>Осанка, 6–7 минут в конце</summary><ol>${POSTURE.map(x=>`<li>${x[0]}${x[1]?` <a href="#" data-gif="${x[1]}" data-name="${x[0]}">анимация</a>`:''}</li>`).join('')}</ol></details>`;
   box.innerHTML=h;
 }
 
@@ -359,10 +416,10 @@ function showQueue(){$('#queue').textContent=queue.length?`ждут отправ
 
 async function saveWorkout(){
   const k=view,d=drafts[k]||{},rows=[],now=new Date();
-  for(const id of WO[k].list){
-    const e=EX[id],sets=[];
+  for(const it of WO[k].list){
+    const id=it.split(':')[0],e=EX[id],one=e.time||e.bw,sets=[];
     (d[id]||[]).forEach((s,i)=>{
-      if(!s)return;const r=num(s.r),w=e.time?0:num(s.w);
+      if(!s)return;const r=num(s.r),w=one?0:num(s.w);
       if(r==null)return;
       sets.push({w:w??0,r});rows.push({exercise_id:id,exercise:e.n,set:i+1,weight:w??0,reps:r});
     });
@@ -387,6 +444,34 @@ async function saveBody(){
 }
 function setNow(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());$('#body-form [name=datetime]').value=d.toISOString().slice(0,16)}
 
+/* ---------- Замеры ---------- */
+const navy=(w,n,h)=>(w&&n&&h&&w>n)?Math.round((495/(1.0324-0.19077*Math.log10(w-n)+0.15456*Math.log10(h))-450)*10)/10:null;
+function measDue(){
+  const ms=(cache&&cache.measures||[]).concat(LS.get('meas_local',[]));
+  const lastOf=k=>ms.filter(r=>r[k]!==''&&r[k]!=null).map(r=>String(r.date).slice(0,10)).sort().pop();
+  const days=d=>d?Math.floor((Date.now()-new Date(d+'T00:00:00'))/864e5):null;
+  const lw=days(lastOf('waist_cm')),lo=days(lastOf('chest_cm'));
+  const t=[];
+  t.push(lw==null?'Талия: ещё не мерил':lw>=7?'<b>Талия: пора мерить</b> (прошло '+lw+' дн.)':'Талия: через '+(7-lw)+' дн.');
+  t.push(lo==null?'Остальное: ещё не мерил':lo>=14?'<b>Остальное: пора мерить</b> (прошло '+lo+' дн.)':'Остальное: через '+(14-lo)+' дн.');
+  $('#meas-due').innerHTML=t.join('<br>');
+}
+function navyPreview(){const f=n=>num($('#meas-form [name='+n+']').value);const v=navy(f('waist_cm'),f('neck_cm'),cfg.height||180);$('#navy-out').textContent=v!=null?'Жир по формуле ВМС США: '+fmt(v)+'%':'Заполни талию и шею — посчитаю % жира по формуле ВМС США.'}
+document.addEventListener('input',ev=>{if(ev.target.closest&&ev.target.closest('#meas-form'))navyPreview()});
+async function saveMeas(){
+  const f=$('#meas-form');if(!f.reportValidity())return;
+  const fd=new FormData(f),m={};
+  for(const k of ['waist_cm','neck_cm','chest_cm','arm_cm','thigh_cm','hips_cm']) m[k]=num(fd.get(k));
+  if(Object.values(m).every(v=>v==null)){toast('Заполни хотя бы один замер');return}
+  m.navy_bf_pct=navy(m.waist_cm,m.neck_cm,cfg.height||180);
+  const rec={type:'measures',entry_id:uid(),date:fd.get('date'),note:fd.get('note')||'',m};
+  queue.push(rec);LS.set('queue',queue);
+  const loc=LS.get('meas_local',[]);loc.push(Object.assign({date:rec.date},m));LS.set('meas_local',loc.slice(-20));
+  f.reset();$('#meas-form [name=date]').value=new Date().toISOString().slice(0,10);navyPreview();measDue();showQueue();
+  const ok=await flush();
+  toast(ok?'Замеры сохранены в таблицу':cfg.url?'Сохранено на телефоне, отправлю позже':'Сохранено на телефоне. Подключи таблицу в настройках');
+}
+
 /* ---------- Прогресс ---------- */
 let charts={};
 async function loadProgress(){
@@ -395,7 +480,7 @@ async function loadProgress(){
   try{
     const r=await fetch(cfg.url+'?token='+encodeURIComponent(cfg.token));const j=await r.json();
     if(!j.ok)throw new Error(j.error);
-    cache={at:new Date().toISOString(),body:j.body||[],workouts:j.workouts||[]};LS.set('cache',cache);
+    cache={at:new Date().toISOString(),body:j.body||[],workouts:j.workouts||[],measures:j.measures||[]};LS.set('cache',cache);
     restoreLast();
   }catch(e){$('#prog-status').textContent='Не получилось загрузить: '+(e.message||'нет связи')+'. Показываю последние сохранённые данные.'}
   drawProgress();
@@ -423,8 +508,9 @@ function drawProgress(){
   if(!cache){return}
   $('#prog-status').textContent='Данные на '+new Date(cache.at).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   // весы
-  const key=$('#body-metric').value;
-  const pts=cache.body.filter(r=>r[key]!==''&&r[key]!=null).sort((a,b)=>a.datetime<b.datetime?-1:1);
+  let key=$('#body-metric').value,src=cache.body,dk='datetime';
+  if(key.startsWith('m:')){key=key.slice(2);src=cache.measures||[];dk='date'}
+  const pts=src.filter(r=>r[key]!==''&&r[key]!=null).map(r=>Object.assign({},r,{datetime:r[dk]})).sort((a,b)=>a.datetime<b.datetime?-1:1);
   const vals=pts.map(r=>+r[key]);
   const avg=vals.map((_,i)=>{const s=vals.slice(Math.max(0,i-6),i+1);return Math.round(s.reduce((a,b)=>a+b,0)/s.length*10)/10});
   lineChart('body',$('#chart-body'),pts.map(r=>dshort(r.datetime)),[
@@ -445,43 +531,68 @@ function drawEx(){
   for(const r of cache.workouts.filter(r=>r.exercise_id===id)){
     const s=sess[r.session_id]=sess[r.session_id]||{date:r.date,top:-Infinity,vol:0,reps:0};
     const w=+r.weight_kg,rp=+r.reps;
-    if(e.time){s.top=Math.max(s.top,rp)}else{s.top=e.assist?Math.min(s.top===-Infinity?Infinity:s.top,w):Math.max(s.top,w);s.vol+=w*rp}
+    if(e.time||e.bw){s.top=Math.max(s.top,rp)}else{s.top=(e.assist||e.band)?Math.min(s.top===-Infinity?Infinity:s.top,w):Math.max(s.top,w);s.vol+=w*rp}
     s.reps+=rp;
   }
   const list=Object.values(sess).sort((a,b)=>a.date<b.date?-1:1);
-  const label=e.time?'Лучший подход, с':e.assist?'Вес помощи, кг (меньше — лучше)':'Рабочий вес, кг';
+  const label=e.time?'Лучший подход, с':e.band?'Номер резинки (меньше — лучше)':e.bw?'Повторы':e.assist?'Вес помощи, кг (меньше — лучше)':'Рабочий вес, кг';
   const ds=[{label,data:list.map(s=>s.top),borderColor:'#0057B8',backgroundColor:'#0057B8',pointRadius:3,tension:.2}];
   lineChart('ex',$('#chart-ex'),list.map(s=>dshort(s.date)),ds);
   const st=$('#ex-stat');
-  if(list.length){const l=list[list.length-1];st.innerHTML=`<div>Последний раз<b>${fmt(l.top)}</b></div>${e.time||e.assist?'':`<div>Тоннаж<b>${Math.round(l.vol)}</b></div>`}<div>Тренировок<b>${list.length}</b></div>`}else st.innerHTML='';
+  if(list.length){const l=list[list.length-1];st.innerHTML=`<div>Последний раз<b>${fmt(l.top)}</b></div>${e.time||e.assist||e.band||e.bw?'':`<div>Тоннаж<b>${Math.round(l.vol)}</b></div>`}<div>Тренировок<b>${list.length}</b></div>`}else st.innerHTML='';
 }
 
 /* ---------- Навигация ---------- */
 function go(v){
   view=v;LS.set('view',v);
   const isW=!!WO[v];
-  $('#view-workout').hidden=!isW;$('#view-body').hidden=v!=='body';$('#view-progress').hidden=v!=='progress';$('#view-settings').hidden=v!=='settings';
+  $('#view-workout').hidden=!isW;$('#view-body').hidden=v!=='body';$('#view-meas').hidden=v!=='meas';$('#view-progress').hidden=v!=='progress';$('#view-settings').hidden=v!=='settings';
   document.querySelectorAll('.plate').forEach(p=>p.setAttribute('aria-pressed',p.dataset.view===v));
   $('#nav-progress').setAttribute('aria-pressed',v==='progress');$('#nav-settings').setAttribute('aria-pressed',v==='settings');
   const sb=$('#savebar'),btn=$('#btn-save');
-  sb.hidden=!(isW||v==='body');
+  sb.hidden=!(isW||v==='body'||v==='meas');
   btn.classList.toggle('y',v==='C');
   if(isW){renderWorkout(v);btn.textContent='Сохранить тренировку '+v}
   else{document.documentElement.style.setProperty('--accent',v==='body'?'var(--green)':'var(--ink)')}
   if(v==='body'){btn.textContent='Сохранить замер';setNow()}
+  if(v==='meas'){btn.textContent='Сохранить замеры';document.documentElement.style.setProperty('--accent','#5D6873');$('#meas-form [name=date]').value=new Date().toISOString().slice(0,10);navyPreview();measDue()}
   if(v==='progress'){drawProgress();loadProgress()}
-  if(v==='settings'){const q=n=>$('#settings-form [name='+n+']');q('url').value=cfg.url;q('token').value=cfg.token;q('start').value=cfg.start}
+  if(v==='settings'){const q=n=>$('#settings-form [name='+n+']');q('url').value=cfg.url;q('token').value=cfg.token;q('start').value=cfg.start;q('height').value=cfg.height||180}
 }
 document.querySelectorAll('.plate').forEach(p=>p.onclick=()=>go(p.dataset.view));
 $('#nav-progress').onclick=()=>go('progress');
 $('#nav-settings').onclick=()=>go('settings');
-$('#btn-save').onclick=()=>view==='body'?saveBody():saveWorkout();
+$('#btn-save').onclick=()=>view==='body'?saveBody():view==='meas'?saveMeas():saveWorkout();
 $('#body-metric').onchange=drawProgress;
 $('#ex-select').onchange=drawEx;
-$('#btn-save-settings').onclick=()=>{const q=n=>$('#settings-form [name='+n+']');cfg={url:q('url').value.trim(),token:q('token').value.trim(),start:q('start').value||cfg.start};LS.set('cfg',cfg);toast('Настройки сохранены')};
+$('#btn-save-settings').onclick=()=>{const q=n=>$('#settings-form [name='+n+']');cfg={url:q('url').value.trim(),token:q('token').value.trim(),start:q('start').value||cfg.start,height:num(q('height').value)||180};LS.set('cfg',cfg);toast('Настройки сохранены')};
 $('#btn-test').onclick=async()=>{$('#btn-save-settings').click();toast(await post({type:'ping'})?'Связь с таблицей есть':'Нет связи — проверь адрес и токен')};
 $('#btn-flush').onclick=async()=>{toast(await flush()?'Очередь отправлена':'Не всё отправилось, попробую позже')};
 window.addEventListener('online',flush);
+/* ---------- Таймер отдыха ---------- */
+let tm=null,actx=null;
+function beep(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;g.gain.value=.15;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.25)}catch(e){}}
+function startRest(id){
+  const [a,b]=restOf(id),t0=Date.now(),el=$('#timer');let beeped=false;
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume()}catch(e){}
+  clearInterval(tm);el.hidden=false;el.className='timer';
+  const tick=()=>{const t=(Date.now()-t0)/1000;$('#timer-t').textContent=mmss(t);
+    if(t>=b){el.className='timer over';$('#timer-lbl').textContent='Пора: подход'}
+    else if(t>=a){el.className='timer ready';$('#timer-lbl').textContent='Можно начинать';if(!beeped){beeped=true;beep()}}
+    else $('#timer-lbl').textContent='Отдых до '+mmss(a);};
+  tick();tm=setInterval(tick,500);
+}
+document.addEventListener('click',ev=>{const r=ev.target.closest('[data-rest]');if(r)startRest(r.dataset.rest)});
+$('#timer-stop').onclick=()=>{clearInterval(tm);$('#timer').hidden=true};
+$('#btn-link').onclick=async()=>{
+  $('#btn-save-settings').click();
+  if(!cfg.url||!cfg.token){toast('Сначала заполни адрес и токен');return}
+  const link=location.origin+location.pathname+'?c='+encodeURIComponent(btoa(JSON.stringify({u:cfg.url,t:cfg.token,s:cfg.start})));
+  $('#link-out').textContent=link;
+  try{await navigator.clipboard.writeText(link);toast('Ссылка скопирована')}catch(e){toast('Скопируй ссылку под кнопкой вручную')}
+};
+// при запуске тихо подтягиваем последние веса из таблицы, если на телефоне их нет
+if(cfg.url&&!Object.keys(last).length){fetch(cfg.url+'?token='+encodeURIComponent(cfg.token)).then(r=>r.json()).then(j=>{if(j.ok){cache={at:new Date().toISOString(),body:j.body||[],workouts:j.workouts||[],measures:j.measures||[]};LS.set('cache',cache);restoreLast();if(WO[view])renderWorkout(view)}}).catch(()=>{})}
 
 go(view);showQueue();flush();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
