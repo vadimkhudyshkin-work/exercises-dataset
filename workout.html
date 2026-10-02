@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Зал">
+<meta name="theme-color" content="#E9ECEA">
+<title>Зал</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --floor:#E9ECEA; --card:#FFFFFF; --ink:#15202B; --muted:#5D6873; --line:#CDD3D6;
+  --red:#C8102E; --blue:#0057B8; --yellow:#E0A800; --green:#00843D;
+  --accent:var(--red);
+  --ui:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --num:"Unbounded","Onest",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{--floor:#14181C;--card:#1E2429;--ink:#E8ECEF;--muted:#9AA5AE;--line:#2E363D}
+}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--floor)}
+body{margin:0;font-family:var(--ui);color:var(--ink);background:var(--floor);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:16px 16px 120px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+header h1{font-family:var(--num);font-size:22px;margin:0;font-weight:700}
+.links{display:flex;gap:4px}
+.links button{background:none;border:0;padding:8px 10px;border-radius:8px;color:var(--muted);font-weight:600;cursor:pointer}
+.links button[aria-pressed=true]{color:var(--ink);background:var(--card)}
+
+/* Плиты-переключатели */
+.plates{display:flex;gap:12px;margin:18px 0 8px;align-items:center}
+.plate{--c:var(--red);width:68px;height:68px;border-radius:50%;border:0;cursor:pointer;
+  background:radial-gradient(circle at center,var(--floor) 0 7px,var(--c) 8px 100%);
+  color:#fff;font-family:var(--num);font-weight:700;font-size:20px;position:relative;
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.18),inset 0 0 0 10px rgba(0,0,0,.08);
+  display:grid;place-items:center;transition:transform .15s}
+.plate span{position:absolute;top:9px;font-size:13px}
+.plate.small{width:56px;height:56px;font-size:11px;font-family:var(--ui);font-weight:700}
+.plate.small span{position:static}
+.plate[aria-pressed=true]{transform:scale(1.12);box-shadow:0 0 0 3px var(--floor),0 0 0 6px var(--c)}
+.plate.y{color:#15202B}
+@media (prefers-reduced-motion:reduce){.plate{transition:none}}
+
+.phase{background:var(--card);border-left:5px solid var(--accent);border-radius:6px;padding:10px 14px;margin:12px 0 18px;font-size:15px}
+.phase b{font-weight:700}
+h2{font-size:18px;margin:22px 0 10px}
+.hint{color:var(--muted);font-size:14px}
+
+details.warm{background:var(--card);border-radius:10px;padding:10px 14px;margin-bottom:14px}
+details.warm summary{font-weight:600;cursor:pointer}
+details.warm ol{margin:8px 0 2px;padding-left:20px}
+
+.ex{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--line)}
+.ex-top{display:grid;grid-template-columns:88px 1fr;gap:12px;align-items:start}
+.gif{width:88px;height:88px;border-radius:8px;background:var(--floor);object-fit:cover;cursor:zoom-in;border:0;padding:0;display:block}
+.gif.none{display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center;cursor:default}
+.ex h3{margin:0;font-size:17px;line-height:1.25}
+.target{color:var(--muted);font-size:14px;margin-top:2px}
+.suggest{font-size:14px;margin-top:6px;font-weight:600;color:var(--accent)}
+.sets{display:grid;grid-template-columns:28px 1fr 1fr;gap:8px 10px;margin-top:12px;align-items:center}
+.sets .lbl{font-size:12px;color:var(--muted)}
+.sets .n{font-family:var(--num);font-size:14px;color:var(--muted);text-align:center}
+.sets input{width:100%;font-family:var(--num);font-size:20px;padding:10px;border:1.5px solid var(--line);border-radius:8px;background:var(--floor);text-align:center;min-width:0}
+.sets input:focus{border-color:var(--accent);outline:0}
+.sets.one{grid-template-columns:28px 1fr}
+details.tech{margin-top:10px}
+details.tech summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:600}
+details.tech ul{margin:6px 0 0;padding-left:18px;font-size:15px}
+
+.savebar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--floor) 30%)}
+.savebar .in{max-width:640px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.btn{flex:1;border:0;border-radius:12px;padding:16px;font-weight:700;font-size:17px;background:var(--accent);color:#fff;cursor:pointer}
+.btn.y{color:#15202B}
+.btn.ghost{flex:0 0 auto;background:var(--card);color:var(--ink);border:1px solid var(--line);font-size:15px;padding:12px 14px}
+.queue{font-size:13px;color:var(--muted);white-space:nowrap}
+
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.form input,.form select,.form textarea{font-size:18px;padding:10px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);min-width:0}
+.form input[type=number]{font-family:var(--num)}
+.form .wide{grid-column:1/-1}
+details.more{grid-column:1/-1}
+details.more summary{cursor:pointer;font-weight:600;margin-bottom:10px}
+
+.panel{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid var(--line)}
+.panel select{font-size:16px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--floor);width:100%;margin-bottom:10px}
+.chartbox{position:relative;height:240px}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:14px;color:var(--muted)}
+.stat b{display:block;font-family:var(--num);font-size:18px;color:var(--ink)}
+
+dialog{border:0;border-radius:14px;padding:12px;background:var(--card);color:var(--ink);max-width:92vw}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog img{width:min(80vw,360px);height:auto;display:block;border-radius:8px}
+dialog p{margin:8px 0 0;font-weight:600}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--floor);padding:10px 16px;border-radius:10px;font-size:15px;max-width:90vw;z-index:9;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+footer{margin-top:28px;font-size:12px;color:var(--muted)}
+footer a{color:inherit}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Зал</h1>
+    <div class="links">
+      <button id="nav-progress" aria-pressed="false">Прогресс</button>
+      <button id="nav-settings" aria-pressed="false">Настройки</button>
+    </div>
+  </header>
+
+  <div class="plates" role="group" aria-label="Выбор экрана">
+    <button class="plate" data-view="A" style="--c:var(--red)" aria-label="Тренировка A"><span>A</span></button>
+    <button class="plate" data-view="B" style="--c:var(--blue)" aria-label="Тренировка B"><span>B</span></button>
+    <button class="plate y" data-view="C" style="--c:var(--yellow)" aria-label="Тренировка C"><span>C</span></button>
+    <button class="plate small" data-view="body" style="--c:var(--green)" aria-label="Данные с весов"><span>Весы</span></button>
+  </div>
+
+  <section id="view-workout"></section>
+
+  <section id="view-body" hidden>
+    <h2>Замер с весов</h2>
+    <p class="hint">Для сравнимых данных: утром, после туалета, до еды и воды.</p>
+    <form class="form" id="body-form" autocomplete="off">
+      <label class="wide">Дата и время<input type="datetime-local" name="datetime" required></label>
+      <label class="wide">Условия
+        <select name="conditions">
+          <option>Утро натощак</option><option>Днём</option><option>Вечером</option><option>После тренировки</option>
+        </select>
+      </label>
+      <label>Вес, кг<input type="number" step="0.1" inputmode="decimal" name="weight_kg" required></label>
+      <label>Жир, %<input type="number" step="0.1" inputmode="decimal" name="fat_pct"></label>
+      <label>Мышцы, кг<input type="number" step="0.1" inputmode="decimal" name="muscle_kg"></label>
+      <label>Вода, %<input type="number" step="0.1" inputmode="decimal" name="water_pct"></label>
+      <label>Висцеральный<input type="number" step="1" inputmode="numeric" name="visceral"></label>
+      <label>Скелетные мышцы, кг<input type="number" step="0.1" inputmode="decimal" name="skeletal_kg"></label>
+      <details class="more">
+        <summary>Остальные показатели</summary>
+        <div class="form">
+          <label>ИМТ<input type="number" step="0.1" inputmode="decimal" name="bmi"></label>
+          <label>Жировая масса, кг<input type="number" step="0.1" inputmode="decimal" name="fat_kg"></label>
+          <label>Скелетные мышцы, %<input type="number" step="0.1" inputmode="decimal" name="skeletal_pct"></label>
+          <label>Белок, %<input type="number" step="0.1" inputmode="decimal" name="protein_pct"></label>
+          <label>Костная масса, кг<input type="number" step="0.1" inputmode="decimal" name="bone_kg"></label>
+          <label>BMR, ккал<input type="number" step="1" inputmode="numeric" name="bmr_kcal"></label>
+          <label>Подкожный жир, %<input type="number" step="0.1" inputmode="decimal" name="subcut_pct"></label>
+          <label>Возраст тела<input type="number" step="1" inputmode="numeric" name="body_age"></label>
+          <label>Оценка тела<input type="number" step="1" inputmode="numeric" name="score"></label>
+        </div>
+      </details>
+      <label class="wide">Заметка<textarea name="note" rows="2" placeholder="Например: плохо спал, вчера было солёное"></textarea></label>
+    </form>
+  </section>
+
+  <section id="view-progress" hidden>
+    <h2>Прогресс</h2>
+    <p class="hint" id="prog-status">Нажми «Обновить», чтобы загрузить данные из таблицы.</p>
+    <div class="panel">
+      <select id="body-metric" aria-label="Показатель">
+        <option value="weight_kg">Вес, кг</option><option value="fat_pct">Жир, %</option>
+        <option value="muscle_kg">Мышцы, кг</option><option value="skeletal_kg">Скелетные мышцы, кг</option>
+        <option value="water_pct">Вода, %</option><option value="visceral">Висцеральный жир</option>
+      </select>
+      <div class="chartbox"><canvas id="chart-body"></canvas></div>
+      <div class="stat" id="body-stat"></div>
+    </div>
+    <div class="panel">
+      <select id="ex-select" aria-label="Упражнение"></select>
+      <div class="chartbox"><canvas id="chart-ex"></canvas></div>
+      <div class="stat" id="ex-stat"></div>
+    </div>
+  </section>
+
+  <section id="view-settings" hidden>
+    <h2>Настройки</h2>
+    <form class="form" id="settings-form" autocomplete="off">
+      <label class="wide">Адрес веб-приложения Apps Script<input type="url" name="url" placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <label class="wide">Токен (тот же, что в скрипте)<input type="text" name="token"></label>
+      <label class="wide">Дата старта программы<input type="date" name="start"></label>
+    </form>
+    <p class="hint">Адрес и токен хранятся только в этом браузере, в репозиторий они не попадают.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn ghost" id="btn-save-settings">Сохранить настройки</button>
+      <button class="btn ghost" id="btn-test">Проверить связь</button>
+      <button class="btn ghost" id="btn-flush">Отправить очередь</button>
+    </div>
+  </section>
+
+  <footer>Анимации упражнений © <a href="https://gymvisual.com/">Gym visual</a>, из датасета <a href="https://github.com/hasaneyldrm/exercises-dataset">exercises-dataset</a>.</footer>
+</main>
+
+<div class="savebar" id="savebar"><div class="in">
+  <span class="queue" id="queue"></span>
+  <button class="btn" id="btn-save">Сохранить</button>
+</div></div>
+
+<dialog id="gifdlg"><img alt=""><p></p><form method="dialog"><button class="btn ghost" style="margin-top:10px;width:100%">Закрыть</button></form></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- Программа ---------- */
+const V = id => 'videos/' + id + '.gif';
+const EX = {
+  lp_high:{n:'Жим ногами, стопы высоко',g:V('1463-2Qh2J1e'),s:3,lo:15,hi:20,st:5,c:['Колени не глубже 90°','Толкай пятками, колени смотрят по линии носков','Наверху не выпрямляй ноги в замок']},
+  legext:{n:'Разгибание ног',g:V('0585-my33uHU'),s:3,lo:15,hi:20,st:2.5,c:['Ось тренажёра напротив колена','Пауза 1 с вверху, опускай 2–3 с','Работай в амплитуде без боли']},
+  chest:{n:'Жим от груди в тренажёре',g:V('0577-T0yTjgW'),s:3,lo:8,hi:12,st:2.5,c:['Рукояти на уровне середины груди','Лопатки прижаты к спинке','Локти под ~45°, не до отказа']},
+  pulldown:{n:'Верхний блок, нейтральный хват',g:V('0818-rkg41Fb'),s:3,lo:10,hi:12,st:2.5,c:['Сначала опусти плечи, потом тяни локтями','К верху груди, корпус чуть назад','Вверх отпускай медленно']},
+  row:{n:'Горизонтальный блок',g:V('0861-fUBheHs'),s:3,lo:10,hi:12,st:2.5,c:['Корпус вертикален, спина прямая','Тяни к низу живота, своди лопатки','Не откидывайся назад для рывка']},
+  lateral:{n:'Махи гантелями в стороны',g:V('0334-DsgkuIt'),s:3,lo:12,hi:15,st:1,c:['До уровня плеч, не выше','Локти чуть согнуты и ведут движение','Без раскачки корпусом']},
+  plank:{n:'Планка',g:null,s:3,lo:30,hi:45,st:5,time:true,c:['Локти под плечами','Тело прямой линией, пресс и ягодицы напряжены','Таз не проваливается']},
+  curl_seat:{n:'Сгибание ног сидя',g:V('0599-Zg3XY7P'),s:3,lo:15,hi:20,st:2.5,c:['Ось напротив колена, валик над пятками','Сгибай до упора, опускай медленно']},
+  bridge:{n:'Ягодичный мост',g:V('3013-u0cNiij'),s:3,lo:12,hi:15,st:2.5,c:['Лопатки на скамье, голень вертикальна вверху','Толкайся пятками, сожми ягодицы на 1 с','Не прогибай поясницу']},
+  calf:{n:'Подъём на носки',g:V('0605-ykUOVze'),s:3,lo:15,hi:20,st:5,c:['Пауза внизу и вверху','Без пружинящих отскоков']},
+  incline:{n:'Жим гантелей, наклон 30°',g:V('0314-ns0SIbU'),s:3,lo:8,hi:12,st:2,c:['Гантели поднимай с колен, ложась','Локти ~45°, опускай до уровня скамьи','Завершая — гантели на грудь, потом садись']},
+  tbar:{n:'Тяга Т-грифа с упором грудью',g:V('0606-aaXr7ld'),s:3,lo:10,hi:12,st:2.5,c:['Грудь всё время на подушке','Локти назад вдоль корпуса, своди лопатки']},
+  facepull:{n:'Тяга каната к лицу',g:null,s:3,lo:12,hi:15,st:2.5,c:['Блок на уровне лица','Тяни к лбу, разводя концы каната','Вес лёгкий — это для здоровья плеча']},
+  bicurl:{n:'Сгибание рук с гантелями',g:V('0294-NbVPDMW'),s:3,lo:10,hi:12,st:1,c:['Локти прижаты и неподвижны','Опускай за 2–3 с, без раскачки']},
+  pushdown:{n:'Разгибание рук на блоке, канат',g:V('0200-dU605di'),s:3,lo:12,hi:15,st:2.5,c:['Локти прижаты к бокам','Внизу разведи концы каната']},
+  lp_mid:{n:'Жим ногами, стопы посередине',g:V('1463-2Qh2J1e'),s:3,lo:20,hi:25,st:5,c:['Лёгкий вес, ровный темп','Колени не глубже 90°, не в замок']},
+  abduct:{n:'Отведение ног',g:V('0597-CHpahtl'),s:2,lo:15,hi:20,st:5,c:['Спина прижата, пауза в крайней точке']},
+  adduct:{n:'Сведение ног',g:V('0598-oHsrypV'),s:2,lo:15,hi:20,st:5,c:['Плавно, без раскачки корпусом']},
+  curl_lie:{n:'Сгибание ног лёжа',g:V('0586-17lJ1kr'),s:2,lo:15,hi:20,st:2.5,c:['Таз прижат к скамье','Опускай медленно']},
+  assisted:{n:'Подтягивания в гравитроне',g:V('0017-kiJ4Z2K'),s:3,lo:8,hi:10,st:-5,assist:true,c:['Чем больше вес помощи, тем легче','Начинай с опускания плеч','Подбородок над перекладиной, вниз до почти прямых рук']},
+  shpress:{n:'Жим вверх в тренажёре',g:V('0603-67n3r98'),s:3,lo:10,hi:12,st:2.5,c:['Рукояти на уровне плеч, нейтральный хват','Не выпрямляй локти до упора','Дискомфорт в плече — замени на махи']},
+  pecdeck:{n:'Бабочка',g:V('0596-v3xmPAR'),s:3,lo:12,hi:15,st:2.5,c:['Локти слегка согнуты и не меняют угол','Не разводи руки дальше линии плеч']},
+  hammer:{n:'Молотковые сгибания',g:V('0313-slDvUAU'),s:2,lo:10,hi:12,st:1,c:['Ладони смотрят друг на друга','Локти неподвижны']},
+  hyper:{n:'Гиперэкстензия',g:V('0489-zhMwOwE'),s:3,lo:12,hi:15,st:2.5,c:['Подушка на уровне таза, не живота','Не поднимайся выше прямой линии тела','Первые недели без веса']}
+};
+const WO = {
+  A:{color:'var(--red)',list:['lp_high','legext','chest','pulldown','row','lateral','plank']},
+  B:{color:'var(--blue)',list:['curl_seat','bridge','calf','incline','tbar','facepull','bicurl','pushdown']},
+  C:{color:'var(--yellow)',list:['lp_mid','abduct','adduct','curl_lie','assisted','shpress','pecdeck','hammer','hyper']}
+};
+const WARM = [
+  ['Велотренажёр 6–8 мин, лёгкое сопротивление',null],
+  ['Наружная ротация плеча на блоке, 2 × 15 на руку',V('0235-FWdVhcW')],
+  ['Тяга каната к лицу, лёгкий вес, 2 × 15',null],
+  ['Разгибание ног, пустой вес, 1 × 20',V('0585-my33uHU')]
+];
+
+/* ---------- Хранилище ---------- */
+const LS = {
+  get(k,d){try{const v=localStorage.getItem('gym.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('gym.'+k,JSON.stringify(v))}catch(e){}}
+};
+let cfg = LS.get('cfg',{url:'',token:'',start:''});
+if(!cfg.start){cfg.start=new Date().toISOString().slice(0,10);LS.set('cfg',cfg)}
+let last = LS.get('last',{});      // exId -> {date, sets:[{w,r}]}
+let queue = LS.get('queue',[]);    // payloads waiting for upload
+let drafts = LS.get('drafts',{});  // workout -> exId -> [{w,r}]
+let cache = LS.get('cache',null);  // data from sheet
+
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const fmt = n => (Math.round(n*10)/10).toString().replace('.',',');
+const num = v => {if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n};
+
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),2800)}
+
+/* ---------- Фаза возврата ---------- */
+function week(){const s=new Date(cfg.start+'T00:00:00');return Math.max(1,Math.floor((Date.now()-s)/6048e5)+1)}
+function phase(){
+  const w=week();
+  if(w<=2) return {w,sets:2,t:'50–60% от прежних весов, 2 подхода, 3–4 повтора в запасе'};
+  if(w<=4) return {w,sets:null,t:'70–85% от прежних весов, 2–3 повтора в запасе'};
+  return {w,sets:null,t:'рабочие веса и прогрессия, 1–2 повтора в запасе'};
+}
+
+/* ---------- Подсказка по весу ---------- */
+function suggest(id){
+  const e=EX[id],l=last[id];
+  if(!l||!l.sets.length) return e.time?'Первый раз — держи столько, сколько получается ровно':'Первый раз — подбери вес, чтобы оставалось 3 повтора в запасе';
+  const top=e.time?null:Math.max(...l.sets.map(s=>s.w||0));
+  const done=l.sets.every(s=>(s.r||0)>=e.hi);
+  const prev=e.time?l.sets.map(s=>s.r+' с').join(', '):l.sets.map(s=>fmt(s.w)+'×'+s.r).join(', ');
+  if(e.time) return 'Прошлый раз: '+prev+(done?'. Добавь 5 с':'');
+  if(done){
+    const nw=Math.max(0,top+e.st);
+    return 'Прошлый раз: '+prev+'. '+(e.assist?'Убавь помощь до '+fmt(nw)+' кг':'Пора прибавить: '+fmt(nw)+' кг');
+  }
+  return 'Прошлый раз: '+prev+'. Тот же вес, добивай до '+e.hi;
+}
+
+/* ---------- Экран тренировки ---------- */
+let view = LS.get('view','A');
+function renderWorkout(key){
+  const w=WO[key],ph=phase(),box=$('#view-workout');
+  document.documentElement.style.setProperty('--accent',w.color);
+  const d=drafts[key]||{};
+  let h=`<div class="phase"><b>Неделя ${ph.w}.</b> ${ph.t}</div>
+  <details class="warm"><summary>Разминка, 10–12 минут</summary><ol>${WARM.map(x=>`<li>${x[0]}${x[1]?` <a href="#" data-gif="${x[1]}" data-name="${x[0]}">анимация</a>`:''}</li>`).join('')}</ol></details>`;
+  for(const id of w.list){
+    const e=EX[id],n=ph.sets?Math.min(ph.sets,e.s):e.s,ds=d[id]||[],ls=(last[id]||{}).sets||[];
+    const gif=e.g?`<button class="gif" style="background:center/cover url('${e.g}') var(--floor)" data-gif="${e.g}" data-name="${e.n}" aria-label="Анимация: ${e.n}"></button>`:`<div class="gif none">нет анимации</div>`;
+    let rows='';
+    for(let i=0;i<n;i++){
+      const dv=ds[i]||{},lv=ls[i]||ls[ls.length-1]||{};
+      rows+=`<span class="n">${i+1}</span>`;
+      if(!e.time) rows+=`<input inputmode="decimal" data-ex="${id}" data-i="${i}" data-f="w" value="${dv.w??''}" placeholder="${lv.w!=null?fmt(lv.w):'кг'}" aria-label="${e.n}, подход ${i+1}, вес">`;
+      rows+=`<input inputmode="numeric" data-ex="${id}" data-i="${i}" data-f="r" value="${dv.r??''}" placeholder="${lv.r!=null?lv.r:(e.time?'сек':'повт')}" aria-label="${e.n}, подход ${i+1}, ${e.time?'секунды':'повторы'}">`;
+    }
+    h+=`<article class="ex"><div class="ex-top">${gif}<div>
+      <h3>${e.n}</h3>
+      <div class="target">${n} × ${e.lo}–${e.hi}${e.time?' с':''}</div>
+      <div class="suggest">${suggest(id)}</div></div></div>
+      <div class="sets${e.time?' one':''}"><span></span>${e.time?'':`<span class="lbl">${e.assist?'помощь, кг':'вес, кг'}</span>`}<span class="lbl">${e.time?'секунды':'повторы'}</span>${rows}</div>
+      <details class="tech"><summary>Техника</summary><ul>${e.c.map(c=>`<li>${c}</li>`).join('')}</ul></details>
+    </article>`;
+  }
+  box.innerHTML=h;
+}
+
+document.addEventListener('input',ev=>{
+  const t=ev.target;if(!t.dataset.ex)return;
+  const k=view,ex=t.dataset.ex,i=+t.dataset.i;
+  drafts[k]=drafts[k]||{};drafts[k][ex]=drafts[k][ex]||[];
+  drafts[k][ex][i]=Object.assign({},drafts[k][ex][i],{[t.dataset.f]:t.value});
+  LS.set('drafts',drafts);
+});
+
+document.addEventListener('click',ev=>{
+  const g=ev.target.closest('[data-gif]');if(!g)return;ev.preventDefault();
+  const dlg=$('#gifdlg');dlg.querySelector('img').src=g.dataset.gif;dlg.querySelector('img').alt=g.dataset.name;dlg.querySelector('p').textContent=g.dataset.name;dlg.showModal();
+});
+
+/* ---------- Отправка ---------- */
+async function post(p){
+  if(!cfg.url) return false;
+  try{
+    const r=await fetch(cfg.url,{method:'POST',body:JSON.stringify(Object.assign({token:cfg.token},p))});
+    let j=null;try{j=await r.json()}catch(e){}
+    if(j&&j.ok===false){if(j.error==='bad_token')toast('Таблица отклонила токен — проверь настройки');return false}
+    return r.ok;
+  }catch(e){return false}
+}
+async function flush(){
+  if(!queue.length||!cfg.url){showQueue();return}
+  const rest=[];
+  for(const p of queue){if(!(await post(p)))rest.push(p)}
+  queue=rest;LS.set('queue',queue);showQueue();
+  return rest.length===0;
+}
+function showQueue(){$('#queue').textContent=queue.length?`ждут отправки: ${queue.length}`:''}
+
+async function saveWorkout(){
+  const k=view,d=drafts[k]||{},rows=[],now=new Date();
+  for(const id of WO[k].list){
+    const e=EX[id],sets=[];
+    (d[id]||[]).forEach((s,i)=>{
+      if(!s)return;const r=num(s.r),w=e.time?0:num(s.w);
+      if(r==null)return;
+      sets.push({w:w??0,r});rows.push({exercise_id:id,exercise:e.n,set:i+1,weight:w??0,reps:r});
+    });
+    if(sets.length) last[id]={date:now.toISOString(),sets};
+  }
+  if(!rows.length){toast('Заполни хотя бы один подход');return}
+  queue.push({type:'workout',session_id:uid(),date:now.toISOString(),workout:k,rows});
+  LS.set('last',last);LS.set('queue',queue);delete drafts[k];LS.set('drafts',drafts);
+  renderWorkout(k);showQueue();window.scrollTo({top:0});
+  const ok=await flush();
+  toast(ok?'Тренировка сохранена в таблицу':cfg.url?'Сохранено на телефоне, отправлю позже':'Сохранено на телефоне. Подключи таблицу в настройках');
+}
+
+async function saveBody(){
+  const f=$('#body-form');if(!f.reportValidity())return;
+  const fd=new FormData(f),m={};
+  for(const [k,v] of fd.entries()) if(!['datetime','conditions','note'].includes(k)) m[k]=num(v);
+  queue.push({type:'body',entry_id:uid(),datetime:new Date(fd.get('datetime')).toISOString(),conditions:fd.get('conditions'),note:fd.get('note')||'',m});
+  LS.set('queue',queue);f.reset();setNow();showQueue();
+  const ok=await flush();
+  toast(ok?'Замер сохранён в таблицу':cfg.url?'Сохранено на телефоне, отправлю позже':'Сохранено на телефоне. Подключи таблицу в настройках');
+}
+function setNow(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());$('#body-form [name=datetime]').value=d.toISOString().slice(0,16)}
+
+/* ---------- Прогресс ---------- */
+let charts={};
+async function loadProgress(){
+  if(!cfg.url){$('#prog-status').textContent='Подключи таблицу в настройках, чтобы видеть прогресс.';return}
+  $('#prog-status').textContent='Загружаю…';
+  try{
+    const r=await fetch(cfg.url+'?token='+encodeURIComponent(cfg.token));const j=await r.json();
+    if(!j.ok)throw new Error(j.error);
+    cache={at:new Date().toISOString(),body:j.body||[],workouts:j.workouts||[]};LS.set('cache',cache);
+    restoreLast();
+  }catch(e){$('#prog-status').textContent='Не получилось загрузить: '+(e.message||'нет связи')+'. Показываю последние сохранённые данные.'}
+  drawProgress();
+}
+function restoreLast(){
+  // если журнал на телефоне пуст (новый телефон), берём последние подходы из таблицы
+  const by={};
+  for(const r of cache.workouts){const id=r.exercise_id;if(!by[id]||r.date>by[id].date)by[id]={date:r.date,sid:r.session_id}}
+  for(const id in by){
+    if(last[id]&&last[id].date>=by[id].date)continue;
+    const sets=cache.workouts.filter(r=>r.session_id===by[id].sid&&r.exercise_id===id).sort((a,b)=>a.set-b.set).map(r=>({w:+r.weight_kg,r:+r.reps}));
+    last[id]={date:by[id].date,sets};
+  }
+  LS.set('last',last);
+}
+const dshort = s => {const d=new Date(s);return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})};
+function lineChart(key,canvas,labels,sets){
+  if(!window.Chart){$('#prog-status').textContent='Графики не загрузились — нужна связь с интернетом.';return}
+  if(charts[key])charts[key].destroy();
+  const css=getComputedStyle(document.documentElement),ink=css.getPropertyValue('--ink').trim(),line=css.getPropertyValue('--line').trim();
+  charts[key]=new Chart(canvas,{type:'line',data:{labels,datasets:sets},options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:ink,boxWidth:12}}},scales:{x:{ticks:{color:ink,maxRotation:0,autoSkip:true},grid:{color:line}},y:{ticks:{color:ink},grid:{color:line}}}}});
+}
+function drawProgress(){
+  if(!cache){return}
+  $('#prog-status').textContent='Данные на '+new Date(cache.at).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  // весы
+  const key=$('#body-metric').value;
+  const pts=cache.body.filter(r=>r[key]!==''&&r[key]!=null).sort((a,b)=>a.datetime<b.datetime?-1:1);
+  const vals=pts.map(r=>+r[key]);
+  const avg=vals.map((_,i)=>{const s=vals.slice(Math.max(0,i-6),i+1);return Math.round(s.reduce((a,b)=>a+b,0)/s.length*10)/10});
+  lineChart('body',$('#chart-body'),pts.map(r=>dshort(r.datetime)),[
+    {label:'Замер',data:vals,borderColor:'#00843D',backgroundColor:'#00843D',pointRadius:3,tension:.25},
+    {label:'Среднее за 7 замеров',data:avg,borderColor:'#5D6873',borderDash:[5,4],pointRadius:0,tension:.25}]);
+  const bs=$('#body-stat');
+  if(vals.length>1){const ch=vals[vals.length-1]-vals[0];bs.innerHTML=`<div>Сейчас<b>${fmt(vals[vals.length-1])}</b></div><div>За период<b>${ch>0?'+':''}${fmt(ch)}</b></div><div>Замеров<b>${vals.length}</b></div>`}else bs.innerHTML='';
+  // упражнения
+  const sel=$('#ex-select'),cur=sel.value;
+  const ids=[...new Set(cache.workouts.map(r=>r.exercise_id))].filter(id=>EX[id]);
+  sel.innerHTML=ids.length?ids.map(id=>`<option value="${id}">${EX[id].n}</option>`).join(''):'<option>Пока нет тренировок в таблице</option>';
+  if(ids.includes(cur))sel.value=cur;
+  drawEx();
+}
+function drawEx(){
+  const id=$('#ex-select').value;if(!cache||!EX[id])return;
+  const e=EX[id],sess={};
+  for(const r of cache.workouts.filter(r=>r.exercise_id===id)){
+    const s=sess[r.session_id]=sess[r.session_id]||{date:r.date,top:-Infinity,vol:0,reps:0};
+    const w=+r.weight_kg,rp=+r.reps;
+    if(e.time){s.top=Math.max(s.top,rp)}else{s.top=e.assist?Math.min(s.top===-Infinity?Infinity:s.top,w):Math.max(s.top,w);s.vol+=w*rp}
+    s.reps+=rp;
+  }
+  const list=Object.values(sess).sort((a,b)=>a.date<b.date?-1:1);
+  const label=e.time?'Лучший подход, с':e.assist?'Вес помощи, кг (меньше — лучше)':'Рабочий вес, кг';
+  const ds=[{label,data:list.map(s=>s.top),borderColor:'#0057B8',backgroundColor:'#0057B8',pointRadius:3,tension:.2}];
+  lineChart('ex',$('#chart-ex'),list.map(s=>dshort(s.date)),ds);
+  const st=$('#ex-stat');
+  if(list.length){const l=list[list.length-1];st.innerHTML=`<div>Последний раз<b>${fmt(l.top)}</b></div>${e.time||e.assist?'':`<div>Тоннаж<b>${Math.round(l.vol)}</b></div>`}<div>Тренировок<b>${list.length}</b></div>`}else st.innerHTML='';
+}
+
+/* ---------- Навигация ---------- */
+function go(v){
+  view=v;LS.set('view',v);
+  const isW=!!WO[v];
+  $('#view-workout').hidden=!isW;$('#view-body').hidden=v!=='body';$('#view-progress').hidden=v!=='progress';$('#view-settings').hidden=v!=='settings';
+  document.querySelectorAll('.plate').forEach(p=>p.setAttribute('aria-pressed',p.dataset.view===v));
+  $('#nav-progress').setAttribute('aria-pressed',v==='progress');$('#nav-settings').setAttribute('aria-pressed',v==='settings');
+  const sb=$('#savebar'),btn=$('#btn-save');
+  sb.hidden=!(isW||v==='body');
+  btn.classList.toggle('y',v==='C');
+  if(isW){renderWorkout(v);btn.textContent='Сохранить тренировку '+v}
+  else{document.documentElement.style.setProperty('--accent',v==='body'?'var(--green)':'var(--ink)')}
+  if(v==='body'){btn.textContent='Сохранить замер';setNow()}
+  if(v==='progress'){drawProgress();loadProgress()}
+  if(v==='settings'){const q=n=>$('#settings-form [name='+n+']');q('url').value=cfg.url;q('token').value=cfg.token;q('start').value=cfg.start}
+}
+document.querySelectorAll('.plate').forEach(p=>p.onclick=()=>go(p.dataset.view));
+$('#nav-progress').onclick=()=>go('progress');
+$('#nav-settings').onclick=()=>go('settings');
+$('#btn-save').onclick=()=>view==='body'?saveBody():saveWorkout();
+$('#body-metric').onchange=drawProgress;
+$('#ex-select').onchange=drawEx;
+$('#btn-save-settings').onclick=()=>{const q=n=>$('#settings-form [name='+n+']');cfg={url:q('url').value.trim(),token:q('token').value.trim(),start:q('start').value||cfg.start};LS.set('cfg',cfg);toast('Настройки сохранены')};
+$('#btn-test').onclick=async()=>{$('#btn-save-settings').click();toast(await post({type:'ping'})?'Связь с таблицей есть':'Нет связи — проверь адрес и токен')};
+$('#btn-flush').onclick=async()=>{toast(await flush()?'Очередь отправлена':'Не всё отправилось, попробую позже')};
+window.addEventListener('online',flush);
+
+go(view);showQueue();flush();
+</script>
+</body>
+</html>
