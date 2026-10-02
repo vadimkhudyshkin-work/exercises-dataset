@@ -1,5 +1,5 @@
 // Офлайн-режим для workout.html: страница и анимации кэшируются на телефоне.
-const CACHE = 'gym-v2';
+const CACHE = 'gym-v3';
 const GIFS = ['0017-kiJ4Z2K', '0200-dU605di', '0235-FWdVhcW', '0294-NbVPDMW', '0313-slDvUAU', '0314-ns0SIbU', '0334-DsgkuIt', '0489-zhMwOwE', '0577-T0yTjgW', '0585-my33uHU', '0586-17lJ1kr', '0596-v3xmPAR', '0597-CHpahtl', '0598-oHsrypV', '0599-Zg3XY7P', '0602-myfUsKf', '0603-67n3r98', '0605-ykUOVze', '0818-rkg41Fb', '0861-fUBheHs', '1350-7I6LNUG', '1463-2Qh2J1e', '3013-u0cNiij'].map(id => 'videos/' + id + '.gif');
 const CORE = ['workout.html', ...GIFS];
 
