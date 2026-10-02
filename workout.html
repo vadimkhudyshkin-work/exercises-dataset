@@ -213,18 +213,18 @@ footer a{color:inherit}
 const V = id => 'videos/' + id + '.gif';
 const EX = {
   lp_high:{n:'Жим ногами, стопы высоко',g:V('1463-2Qh2J1e'),s:3,lo:15,hi:20,st:5,c:['Колени не глубже 90°','Толкай пятками, колени смотрят по линии носков','Наверху не выпрямляй ноги в замок']},
-  legext:{n:'Разгибание ног',g:V('0585-my33uHU'),s:3,lo:15,hi:20,st:2.5,c:['Ось тренажёра напротив колена','Пауза 1 с вверху, опускай 2–3 с','Работай в амплитуде без боли']},
-  chest:{n:'Жим от груди в тренажёре',g:V('0577-T0yTjgW'),s:3,lo:8,hi:12,st:2.5,c:['Рукояти на уровне середины груди','Лопатки прижаты к спинке','Локти под ~45°, не до отказа']},
-  pulldown:{n:'Верхний блок, нейтральный хват',g:V('0818-rkg41Fb'),s:3,lo:10,hi:12,st:2.5,c:['Сначала опусти плечи, потом тяни локтями','К верху груди, корпус чуть назад','Вверх отпускай медленно']},
-  row:{n:'Горизонтальный блок',g:V('0861-fUBheHs'),s:3,lo:10,hi:12,st:2.5,c:['Корпус вертикален, спина прямая','Тяни к низу живота, своди лопатки','Не откидывайся назад для рывка']},
-  lateral:{n:'Махи гантелями в стороны',g:V('0334-DsgkuIt'),s:3,lo:12,hi:15,st:1,c:['До уровня плеч, не выше','Локти чуть согнуты и ведут движение','Без раскачки корпусом']},
+  legext:{n:'Разгибание ног',g:V('0585-my33uHU'),s:3,lo:15,hi:20,st:2.5,base:25,c:['Ось тренажёра напротив колена','Пауза 1 с вверху, опускай 2–3 с','Работай в амплитуде без боли']},
+  chest:{n:'Жим от груди в Хаммере',g:V('0577-T0yTjgW'),s:3,lo:8,hi:12,st:1.25,base:15,side:true,c:['Сиденье на 6 — рукояти на уровне середины груди','Лопатки прижаты к спинке','Локти под ~45°, не до отказа']},
+  pulldown:{n:'Верхний блок, нейтральный хват',g:V('0818-rkg41Fb'),s:3,lo:10,hi:12,st:2.5,base:45,c:['Сначала опусти плечи, потом тяни локтями','К верху груди, корпус чуть назад','Вверх отпускай медленно']},
+  row:{n:'Горизонтальный блок',g:V('0861-fUBheHs'),s:3,lo:10,hi:12,st:2.5,base:42.5,c:['Корпус вертикален, спина прямая','Тяни к низу живота, своди лопатки','Не откидывайся назад для рывка']},
+  lateral:{n:'Махи гантелями в стороны',g:V('0334-DsgkuIt'),s:3,lo:12,hi:15,st:1,base:8,c:['До уровня плеч, не выше','Локти чуть согнуты и ведут движение','Без раскачки корпусом']},
   plank:{n:'Планка',g:null,s:3,lo:30,hi:45,st:5,time:true,c:['Локти под плечами','Тело прямой линией, пресс и ягодицы напряжены','Таз не проваливается']},
   curl_seat:{n:'Сгибание ног сидя',g:V('0599-Zg3XY7P'),s:3,lo:15,hi:20,st:2.5,c:['Ось напротив колена, валик над пятками','Сгибай до упора, опускай медленно']},
   bridge:{n:'Ягодичный мост',g:V('3013-u0cNiij'),s:3,lo:12,hi:15,st:2.5,c:['Лопатки на скамье, голень вертикальна вверху','Толкайся пятками, сожми ягодицы на 1 с','Не прогибай поясницу']},
   calf:{n:'Подъём на носки',g:V('0605-ykUOVze'),s:3,lo:15,hi:20,st:5,c:['Пауза внизу и вверху','Без пружинящих отскоков']},
-  incline:{n:'Жим гантелей, наклон 30°',g:V('0314-ns0SIbU'),s:3,lo:8,hi:12,st:2,c:['Гантели поднимай с колен, ложась','Локти ~45°, опускай до уровня скамьи','Завершая — гантели на грудь, потом садись']},
-  tbar:{n:'Тяга Т-грифа с упором грудью',g:V('0606-aaXr7ld'),s:3,lo:10,hi:12,st:2.5,c:['Грудь всё время на подушке','Локти назад вдоль корпуса, своди лопатки']},
-  facepull:{n:'Тяга каната к лицу',g:null,s:3,lo:12,hi:15,st:2.5,c:['Блок на уровне лица','Тяни к лбу, разводя концы каната','Вес лёгкий — это для здоровья плеча']},
+  incline:{n:'Жим гантелей, наклон 30°',g:V('0314-ns0SIbU'),s:3,lo:8,hi:12,st:2,base:14,c:['Гантели поднимай с колен, ложась','Локти ~45°, опускай до уровня скамьи','Завершая — гантели на грудь, потом садись']},
+  circle:{n:'Тяга по окружности, упор грудью',g:V('1350-7I6LNUG'),s:3,lo:10,hi:12,st:2.5,base:25,c:['Грудь прижата к опоре всё время','Локти назад-вниз, в конце своди лопатки','Возврат медленный, до растяжения']},
+  reardelt:{n:'Задняя дельта в тренажёре',g:V('0602-myfUsKf'),s:3,lo:12,hi:15,st:2.5,base:33.75,c:['Грудь прижата к подушке','Разводи руки локтями, лопатки специально не своди','Пауза в конце, возврат медленный']},
   bicurl:{n:'Сгибание рук с гантелями',g:V('0294-NbVPDMW'),s:3,lo:10,hi:12,st:1,c:['Локти прижаты и неподвижны','Опускай за 2–3 с, без раскачки']},
   pushdown:{n:'Разгибание рук на блоке, канат',g:V('0200-dU605di'),s:3,lo:12,hi:15,st:2.5,c:['Локти прижаты к бокам','Внизу разведи концы каната']},
   lp_mid:{n:'Жим ногами, стопы посередине',g:V('1463-2Qh2J1e'),s:3,lo:20,hi:25,st:5,c:['Лёгкий вес, ровный темп','Колени не глубже 90°, не в замок']},
@@ -239,7 +239,7 @@ const EX = {
 };
 const WO = {
   A:{color:'var(--red)',list:['lp_high','legext','chest','pulldown','row','lateral','plank']},
-  B:{color:'var(--blue)',list:['curl_seat','bridge','calf','incline','tbar','facepull','bicurl','pushdown']},
+  B:{color:'var(--blue)',list:['curl_seat','bridge','calf','incline','circle','reardelt','bicurl','pushdown']},
   C:{color:'var(--yellow)',list:['lp_mid','abduct','adduct','curl_lie','assisted','shpress','pecdeck','hammer','hyper']}
 };
 const WARM = [
@@ -263,7 +263,7 @@ let cache = LS.get('cache',null);  // data from sheet
 
 const $ = s => document.querySelector(s);
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-const fmt = n => (Math.round(n*10)/10).toString().replace('.',',');
+const fmt = n => (Math.round(n*100)/100).toString().replace('.',',');
 const num = v => {if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n};
 
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),2800)}
@@ -272,14 +272,15 @@ function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');c
 function week(){const s=new Date(cfg.start+'T00:00:00');return Math.max(1,Math.floor((Date.now()-s)/6048e5)+1)}
 function phase(){
   const w=week();
-  if(w<=2) return {w,sets:2,t:'50–60% от прежних весов, 2 подхода, 3–4 повтора в запасе'};
-  if(w<=4) return {w,sets:null,t:'70–85% от прежних весов, 2–3 повтора в запасе'};
-  return {w,sets:null,t:'рабочие веса и прогрессия, 1–2 повтора в запасе'};
+  if(w<=2) return {w,sets:2,pct:.55,t:'50–60% от прежних весов, 2 подхода, 3–4 повтора в запасе'};
+  if(w<=4) return {w,sets:null,pct:.75,t:'70–85% от прежних весов, 2–3 повтора в запасе'};
+  return {w,sets:null,pct:1,t:'рабочие веса и прогрессия, 1–2 повтора в запасе'};
 }
 
 /* ---------- Подсказка по весу ---------- */
 function suggest(id){
   const e=EX[id],l=last[id];
+  if((!l||!l.sets.length)&&e.base){const p=phase().pct,a=Math.abs(e.st),w=Math.round(e.base*p/a)*a;return 'Старт: ~'+fmt(w)+' кг'+(e.side?' на сторону':'')+(p<1?' ('+Math.round(p*100)+'% от рабочего '+fmt(e.base)+')':'')}
   if(!l||!l.sets.length) return e.time?'Первый раз — держи столько, сколько получается ровно':'Первый раз — подбери вес, чтобы оставалось 3 повтора в запасе';
   const top=e.time?null:Math.max(...l.sets.map(s=>s.w||0));
   const done=l.sets.every(s=>(s.r||0)>=e.hi);
@@ -287,7 +288,7 @@ function suggest(id){
   if(e.time) return 'Прошлый раз: '+prev+(done?'. Добавь 5 с':'');
   if(done){
     const nw=Math.max(0,top+e.st);
-    return 'Прошлый раз: '+prev+'. '+(e.assist?'Убавь помощь до '+fmt(nw)+' кг':'Пора прибавить: '+fmt(nw)+' кг');
+    return 'Прошлый раз: '+prev+'. '+(e.assist?'Убавь помощь до '+fmt(nw)+' кг':'Пора прибавить: '+fmt(nw)+' кг'+(e.side?' на сторону':''));
   }
   return 'Прошлый раз: '+prev+'. Тот же вес, добивай до '+e.hi;
 }
@@ -314,7 +315,7 @@ function renderWorkout(key){
       <h3>${e.n}</h3>
       <div class="target">${n} × ${e.lo}–${e.hi}${e.time?' с':''}</div>
       <div class="suggest">${suggest(id)}</div></div></div>
-      <div class="sets${e.time?' one':''}"><span></span>${e.time?'':`<span class="lbl">${e.assist?'помощь, кг':'вес, кг'}</span>`}<span class="lbl">${e.time?'секунды':'повторы'}</span>${rows}</div>
+      <div class="sets${e.time?' one':''}"><span></span>${e.time?'':`<span class="lbl">${e.assist?'помощь, кг':e.side?'кг на сторону':'вес, кг'}</span>`}<span class="lbl">${e.time?'секунды':'повторы'}</span>${rows}</div>
       <details class="tech"><summary>Техника</summary><ul>${e.c.map(c=>`<li>${c}</li>`).join('')}</ul></details>
     </article>`;
   }
@@ -480,6 +481,7 @@ $('#btn-flush').onclick=async()=>{toast(await flush()?'Очередь отпра
 window.addEventListener('online',flush);
 
 go(view);showQueue();flush();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 </body>
 </html>
